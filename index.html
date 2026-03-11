@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSEAD Excuse Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a1a;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #ff6b6b, #ffa500, #ff6b6b);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+        }
+
+        @keyframes gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .excuse-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            margin-bottom: 2rem;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .excuse-box:hover {
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .excuse-text {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+            font-style: italic;
+        }
+
+        .excuse-text .emoji {
+            font-style: normal;
+            font-size: 1.6rem;
+        }
+
+        .placeholder {
+            color: #444;
+            font-style: normal;
+            font-size: 1.1rem;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .category {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .category.pre-read { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
+        .category.group-work { background: rgba(255, 165, 0, 0.15); color: #ffa500; }
+        .category.attendance { background: rgba(107, 166, 255, 0.15); color: #6ba6ff; }
+        .category.career { background: rgba(107, 255, 162, 0.15); color: #6bffa2; }
+        .category.social { background: rgba(200, 107, 255, 0.15); color: #c86bff; }
+        .category.technical { background: rgba(255, 215, 0, 0.15); color: #ffd700; }
+
+        .counter {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #444;
+            letter-spacing: 1px;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 107, 107, 0.3);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="container">
+        <h1>INSEAD 26D Presents</h1>
+        <h2>The Excuse Generator</h2>
+        <div class="excuse-box" id="excuseBox">
+            <p class="excuse-text"><span class="placeholder">Why didn't you do the pre-read?</span></p>
+        </div>
+        <button onclick="generate()">GENERATE EXCUSE</button>
+        <div id="category"></div>
+        <div class="counter" id="counter">0 excuses generated. MBA integrity intact.</div>
+    </div>
+
+    <script>
+        const excuses = [
+            { text: "I was doing a deep dive on the case... on LinkedIn. Does stalking the CEO count as primary research?", cat: "pre-read", emoji: "🔍" },
+            { text: "My study group met at Café de la Paix and we got distracted debating whether P&M is actually useful.", cat: "pre-read", emoji: "☕" },
+            { text: "I read the executive summary. That's basically the whole case but efficient.", cat: "pre-read", emoji: "⚡" },
+            { text: "I was networking at Bar 1627 until 3am. That's what INSEAD is really about, right?", cat: "attendance", emoji: "🍷" },
+            { text: "My section mate explained the case to me in the shuttle. Peer learning.", cat: "pre-read", emoji: "🚌" },
+            { text: "I prioritised my PLDP reflection journal because personal growth comes first.", cat: "attendance", emoji: "🧘" },
+            { text: "I was at a career trek in London. I'm here for the network, not the grades.", cat: "career", emoji: "✈️" },
+            { text: "The PDF wouldn't open on my laptop. I tried for almost 30 seconds.", cat: "technical", emoji: "💻" },
+            { text: "I was helping P5 organise their party. Cross-section collaboration is an INSEAD value.", cat: "social", emoji: "🎉" },
+            { text: "I did the pre-read but in a language you wouldn't understand. It's called vibes.", cat: "pre-read", emoji: "✨" },
+            { text: "My group allocated the pre-read to me for next week. I'm on a different sprint cycle.", cat: "group-work", emoji: "📊" },
+            { text: "I was on a call with a recruiter. Sorry, BCG waits for no one.", cat: "career", emoji: "📞" },
+            { text: "Fontainebleau had a power cut. Well, my room did. Well, my desk lamp.", cat: "technical", emoji: "🕯️" },
+            { text: "I applied the 80/20 rule. I read 20% of the case and I'm 80% confident I'll be fine.", cat: "pre-read", emoji: "📈" },
+            { text: "I was at the château for a cultural immersion experience. Très important.", cat: "social", emoji: "🏰" },
+            { text: "My cold call insurance ran out.", cat: "attendance", emoji: "🎰" },
+            { text: "I was writing my cover letter for McKinsey. It's 47 drafts deep.", cat: "career", emoji: "📝" },
+            { text: "The case was about an industry I'm not interested in. I'm being intentional with my time.", cat: "pre-read", emoji: "🎯" },
+            { text: "I was in Singapore. Time zone difference. Also I forgot.", cat: "attendance", emoji: "🌏" },
+            { text: "I outsourced the pre-read to Claude. Is that not what we're learning to do?", cat: "technical", emoji: "🤖" },
+            { text: "My Nespresso machine broke and I can't function without it. This is a medical emergency.", cat: "attendance", emoji: "☕" },
+            { text: "I was doing market sizing in my head at 2am and lost track of time.", cat: "pre-read", emoji: "🧮" },
+            { text: "I spent 4 hours on the group slides and my teammate changed the font after.", cat: "group-work", emoji: "😤" },
+            { text: "I'm saving my participation points for a case I actually understand.", cat: "attendance", emoji: "🏦" },
+            { text: "I thought it was a P2 reading. Are we not in P2 yet? What day is it?", cat: "pre-read", emoji: "📅" },
+            { text: "I was rehearsing my National Week dance. Cultural exchange is in the INSEAD DNA.", cat: "social", emoji: "💃" },
+            { text: "Campus WiFi went down. I know you don't believe me but this time it's true.", cat: "technical", emoji: "📡" },
+            { text: "I read a different case. Like, a really interesting one. Not this one though.", cat: "pre-read", emoji: "📚" },
+            { text: "My group had 14 WhatsApp messages about when to meet and 0 about the actual work.", cat: "group-work", emoji: "💬" },
+            { text: "I was mentoring a P1. Giving back to the INSEAD community.", cat: "social", emoji: "🤝" },
+            { text: "I did a cost-benefit analysis and the pre-read had negative expected value.", cat: "pre-read", emoji: "📉" },
+            { text: "I was at a wine tasting in Burgundy. It was educational. I learned about terroir.", cat: "social", emoji: "🍇" },
+            { text: "My printer ran out of ink. Yes, I still print cases. No, I will not explain.", cat: "technical", emoji: "🖨️" },
+            { text: "I had back-to-back coffee chats from 8am to 11pm. I am networked out.", cat: "career", emoji: "🫠" },
+            { text: "The pre-read was 47 pages. I believe in work-life balance.", cat: "pre-read", emoji: "⚖️" },
+        ];
+
+        let count = 0;
+        let lastIndex = -1;
+
+        function generate() {
+            let index;
+            do {
+                index = Math.floor(Math.random() * excuses.length);
+            } while (index === lastIndex);
+            lastIndex = index;
+
+            const excuse = excuses[index];
+            const box = document.getElementById('excuseBox');
+            box.classList.remove('shake');
+            void box.offsetWidth;
+            box.classList.add('shake');
+
+            box.innerHTML = `<p class="excuse-text"><span class="emoji">${excuse.emoji}</span> ${excuse.text}</p>`;
+
+            const catEl = document.getElementById('category');
+            catEl.innerHTML = `<span class="category ${excuse.cat}">${excuse.cat.replace('-', ' ')}</span>`;
+
+            count++;
+            const messages = [
+                `${count} excuse${count > 1 ? 's' : ''} generated. MBA integrity intact.`,
+                `${count} excuses generated. Your professor is not convinced.`,
+                `${count} excuses generated. HR has been notified.`,
+                `${count} excuses generated. Dean's list (the bad one).`,
+                `${count} excuses generated. At this point just drop the course.`,
+            ];
+            const msgIndex = Math.min(Math.floor(count / 5), messages.length - 1);
+            document.getElementById('counter').textContent = messages[msgIndex];
+        }
+
+        // Particles
+        const particlesEl = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            p.style.animationDelay = (Math.random() * 10) + 's';
+            p.style.width = p.style.height = (Math.random() * 3 + 1) + 'px';
+            particlesEl.appendChild(p);
+        }
+    </script>
+</body>
+</html>
